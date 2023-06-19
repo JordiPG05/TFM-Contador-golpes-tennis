@@ -1,4 +1,5 @@
 import cv2
+import json
 import time
 import torch
 import argparse
@@ -159,13 +160,15 @@ def run(poseweights='yolov7-w6-pose.pt', source='pose.mp4', device='cpu', names=
                 total_fps += fps
                 frame_count += 1
                 out.write(img_img)
+                
             else:
+                return keypoints
                 break
 
         cap.release()
         avg_fps = total_fps / frame_count
         print(f"Average FPS: {avg_fps:.3f}")
-
+        return keypoints
 
 def parse_opt():
     parser = argparse.ArgumentParser()
@@ -182,10 +185,13 @@ def parse_opt():
 
 
 def main(opt):
-    run(**vars(opt))
+    keypoints = run(**vars(opt))
+    return keypoints
 
 
 if __name__ == "__main__":
     opt = parse_opt()
     strip_optimizer(opt.device, opt.poseweights)
-    main(opt)
+    keypoints = main(opt)
+    with open('keypoints.json', 'w') as f:
+        json.dump(keypoints, f)
